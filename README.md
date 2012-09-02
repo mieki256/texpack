@@ -5,6 +5,13 @@ Texture Atlas用の画像を生成するPythonスクリプト。
 * 複数のpngファイルを1枚のpng画像に配置する。
 * Windows7 x64 + Python 2.6.6 + PIL で動作確認。
 
+## 結果画像サンプル
+
+[![賢くない感じの詰め込みサンプル画像](https://dl.dropbox.com/u/84075965/screenshot/texpack/out1.png)](https://dl.dropbox.com/u/84075965/screenshot/texpack/out1.png)
+[![ギッシリ詰め込んだ感じのサンプル画像](https://dl.dropbox.com/u/84075965/screenshot/texpack/out2.png)](https://dl.dropbox.com/u/84075965/screenshot/texpack/out2.png)
+
+[出力xmlのサンプル](https://dl.dropbox.com/u/84075965/screenshot/texpack/out2.xml)
+
 ## 使い方
 
     Usage:
