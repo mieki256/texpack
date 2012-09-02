@@ -12,8 +12,16 @@ usage:
     python texpack.py -i *.png -o out.png -x out.xml
     python texpack.py --help
 
-0.0.2  2012/09/02  BLF法での配置処理を追加。
-0.0.1  2012/09/01  Next-Fit法での配置処理のみ実装。
+履歴
+----
+
+2012/09/02 ver 0.0.2
+
+* BLF法での配置処理を追加。
+
+2012/09/01 ver 0.0.1
+
+* Next-Fit法での配置処理のみ実装。
 
 """
 
