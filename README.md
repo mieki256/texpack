@@ -1,4 +1,4 @@
-# textpack.py
+# texpack.py
 
 Texture Atlas用の画像を生成するPythonスクリプト。
 
@@ -7,7 +7,9 @@ Texture Atlas用の画像を生成するPythonスクリプト。
 
 ## 使い方
 
-    Usage: texpack.py [options]
+    Usage:
+        texpack.py -i img\*.png -o out.png \x out.xml
+        texpack.py --help
     
     Options:
       --version             show program's version number and exit
