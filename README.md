@@ -8,7 +8,7 @@ Texture Atlas用の画像を生成するPythonスクリプト。
 ## 使い方
 
     Usage:
-        texpack.py -i img\*.png -o out.png \x out.xml
+        texpack.py -i img\*.png -o out.png -x out.xml
         texpack.py --help
     
     Options:
