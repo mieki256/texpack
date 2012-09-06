@@ -15,6 +15,11 @@ usage:
 履歴
 ----
 
+2012/09/07 ver 0.0.3
+
+* trim有効時のxml出力を修正。
+* xml出力時、ファイル名でソートしてから出力するようにした。
+
 2012/09/02 ver 0.0.2
 
 * BLF法での配置処理を追加。
@@ -34,7 +39,7 @@ import sys
 from operator import itemgetter, attrgetter
 from collections import namedtuple
 
-ver = "0.0.2" # バージョン番号
+ver = "0.0.3" # バージョン番号
 
 def chk_arg():
     u"""コマンドラインオプションを解析."""
@@ -96,15 +101,24 @@ class ImageRect:
     u"""画像一枚分の情報を格納するクラス"""
 
     def __init__(self, fn, border, i):
+        self.name, self.ext = os.path.splitext(os.path.basename(fn))
+
         self.img = Image.open(fn)
         self.img.load()
 
         self.fn = fn
         self.idx = i
         self.border = int(border)
+
         self.x = 0
         self.y = 0
         self.set_wh()
+
+        self.trim_enable = False
+        self.frame_x = 0
+        self.frame_y = 0
+        self.frame_w = self.rw
+        self.frame_h = self.rh
 
     def set_wh(self):
         self.rw = self.img.size[0]
@@ -114,13 +128,30 @@ class ImageRect:
 
     def trim(self):
         u"""最小サイズでトリミング"""
-        trim_size = self.img.getbbox()
-        self.img = self.img.crop(trim_size)
-        self.set_wh()
+
+        tw = self.img.size[0]
+        th = self.img.size[1]
+        t = self.img.getbbox()
+        if t[0] != 0 or t[1] != 0 or t[2] != tw or t[3] != th:
+            self.trim_enable = True
+            self.frame_x = - t[0]
+            self.frame_y = - t[1]
+            self.img = self.img.crop(t)
+            self.set_wh()
 
     def dump(self):
-        print "%4d %s x,y,w,h=%d,%d,%d(%d),%d(%d)" % (self.idx,
-            self.fn, self.x, self.y, self.w, self.rw, self.h, self.rh)
+        s = "%4d %s %s " % (self.idx, self.name, self.fn)
+        s +=" x,y,w,h=%d,%d,%d(%d),%d(%d)" % \
+            (self.x, self.y, self.w, self.rw, self.h, self.rh)
+        if self.trim_enable:
+            s += " trim fX,fY,fW,fH=%d,%d,%d,%d" % \
+                (self.frame_x, self.frame_y, self.frame_w, self.frame_h)
+        print s
+
+def dump_all_image_info(lis):
+    u"""全画像の情報をダンプ"""
+
+    map((lambda im: im.dump()), lis)
 
 def open_image(opts):
     u"""画像ファイル群を開く."""
@@ -136,7 +167,7 @@ def open_image(opts):
         lis.append(ImageRect(f, opts.border, i))
 
     if opts.verbose:
-        map((lambda im: im.dump()), lis)
+        dump_all_image_info(lis)
 
     # 各画像を最小サイズでトリミング
     if opts.trim:
@@ -149,7 +180,7 @@ def open_image(opts):
         lis = sortlis_h
         if opts.debug:
             print "# sort"
-            map((lambda im: im.dump()), lis)
+            dump_all_image_info(lis)
 
     # 画像を配置
     dw = 0
@@ -164,6 +195,16 @@ def open_image(opts):
     bkimg = Image.new('RGBA', (dw, dh), (0,0,0,0))
     for im in r_lis:
         bkimg.paste(im.img, (im.x + im.border, im.y + im.border))
+
+    # 画像リストを元の並びにソート
+    if not opts.sortoff:
+        sortlis_h = sorted(lis, key=attrgetter('idx'), reverse=False)
+        lis = sortlis_h
+
+    # 確認のために各画像の配置状態をダンプ
+    if opts.verbose:
+        print "# Result"
+        dump_all_image_info(lis)
 
     # 画像を保存
     bkimg.save(opts.outpng, 'PNG')
@@ -182,19 +223,22 @@ def open_image(opts):
 def output_xml(outfn, pngfn,  lis):
     u"""xmlを出力"""
 
+    png_basename = os.path.basename(pngfn)
     f = open(outfn, "w")
     f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-    f.write(u"<TextureAtlas imagePath=\"%s\">\n" % (os.path.basename(pngfn)))
+    f.write(u"<TextureAtlas imagePath=\"%s\">\n" % (png_basename))
 
     for im in lis:
         x = im.x + im.border
         y = im.y + im.border
-        w = im.rw
-        h = im.rh
-        (nm,ext) = os.path.splitext(os.path.basename(im.fn))
-        s = u"    <SubTexture name=\"%s\"" % nm
+        s = u"    <SubTexture name=\"%s\"" % (im.name)
         s += u" x=\"%d\" y=\"%d\"" % (x, y)
-        s += u" width=\"%d\" height=\"%d\"" % (w, h)
+        s += u" width=\"%d\" height=\"%d\"" % (im.rw, im.rh)
+        if im.trim_enable:
+            s += " frameX=\"%d\" frameY=\"%d\"" % (im.frame_x, im.frame_y)
+            s += " frameWidth=\"%d\" frameHeight=\"%d\"" % \
+                (im.frame_w, im.frame_h)
+
         s += u"/>\n"
         f.write(s)
 
