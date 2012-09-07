@@ -6,7 +6,7 @@
 Texture Atlas用の画像を生成するPythonスクリプト。
 
 * 複数のpngファイルを1枚のpng画像に配置する。
-* Windows7 x64 + Python 2.6.6 + PIL で動作確認。
+* Windows7 x64 + Python 2.7.3 + PIL で動作確認。
 
 usage:
     python texpack.py -i *.png -o out.png -x out.xml
