@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- mode: python; Encoding: utf8n -*-
 
-u"""
+"""
 Texture Atlas用の画像を生成するPythonスクリプト。
 
 * 複数のpngファイルを1枚のpng画像に配置する。
@@ -14,6 +14,10 @@ usage:
 
 履歴
 ----
+
+2012/09/07 ver 0.0.4
+
+* PEP8に従ってソースを整形。
 
 2012/09/07 ver 0.0.3
 
@@ -36,50 +40,47 @@ import glob
 from PIL import Image
 import os
 import sys
-from operator import itemgetter, attrgetter
+from operator import attrgetter
 from collections import namedtuple
 
-ver = "0.0.3" # バージョン番号
+VER = "0.0.4"  # バージョン番号
+
 
 def chk_arg():
-    u"""コマンドラインオプションを解析."""
+    """コマンドラインオプションを解析."""
 
-    parser = OptionParser(version="%prog "+ver)
+    parser = OptionParser(version="%prog " + VER)
 
-    parser.set_defaults(verbose = True,
-                        border = 2,
-                        mode = "blf",
-                        infile = ".\\*.png",
-                        outpng = "out.png",
-                        outxml = "out.xml",
-                        trim = False,
-                        show = False,
-                        sortoff = False,
-                        debug = False)
+    parser.set_defaults(verbose=True, debug=False, border=2,
+                        mode="blf",
+                        infile=".\\*.png",
+                        outpng="out.png",
+                        outxml="out.xml",
+                        trim=False, show=False, sortoff=False)
 
     parser.add_option("-i", "--infile", metavar="WILDCARD",
-        help=u"入力PNGファイル名(ワイルドカード指定) [default: %default]")
+                      help=u"入力PNGファイル名(ワイルドカード指定) [%default]")
     parser.add_option("-o", "--outpng", metavar="FILE",
-        help=u"出力PNGファイル名 [default: %default]")
-    parser.add_option("-x", "--outxml",  metavar="FILE",
-        help=u"出力XMLファイル名 [default: %default]")
+                      help=u"出力PNGファイル名 [%default]")
+    parser.add_option("-x", "--outxml", metavar="FILE",
+                      help=u"出力XMLファイル名 [%default]")
     parser.add_option("-m", "--mode", metavar="MODE", type="choice",
-        choices=['blf', 'nextfit'],
-        help=u"配置モード ('blf' or 'nextfit') [default: %default]")
+                      choices=['blf', 'nextfit'],
+                      help=u"配置モード(blf|nextfit) [%default]")
     parser.add_option("-b", "--border", type="int", metavar="NUM",
-        help=u"各画像の隙間のドット数 [default: %default]")
+                      help=u"各画像の隙間のドット数 [default: %default]")
     parser.add_option("-t", "--trim", action="store_true",
-        help=u"各画像を配置前にトリミングする")
+                      help=u"各画像を配置前にトリミングする")
     parser.add_option("--sortoff", action="store_true",
-        help=u"各画像を配置前にソートしない")
+                      help=u"各画像を配置前にソートしない")
     parser.add_option("--show", action="store_true",
-        help=u"結果画像を表示")
+                      help=u"結果画像を表示")
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
-        help=u"処理内容を詳細表示 [default]")
+                      help=u"処理内容を詳細表示 [default]")
     parser.add_option("-q", "--quiet", dest="verbose", action="store_false",
-        help=u"処理内容を詳細表示しない")
+                      help=u"処理内容を詳細表示しない")
     parser.add_option("--debug", action="store_true",
-        help=u"デバッグメッセージを表示")
+                      help=u"デバッグメッセージを表示")
 
     (opts, args) = parser.parse_args()
     if len(args) != 0:
@@ -97,8 +98,9 @@ def chk_arg():
 
     return opts
 
+
 class ImageRect:
-    u"""画像一枚分の情報を格納するクラス"""
+    """画像一枚分の情報を格納するクラス"""
 
     def __init__(self, fn, border, i):
         self.name, self.ext = os.path.splitext(os.path.basename(fn))
@@ -112,6 +114,10 @@ class ImageRect:
 
         self.x = 0
         self.y = 0
+        self.w = 0
+        self.h = 0
+        self.rw = 0
+        self.rh = 0
         self.set_wh()
 
         self.trim_enable = False
@@ -121,40 +127,42 @@ class ImageRect:
         self.frame_h = self.rh
 
     def set_wh(self):
+        """幅と高さを取得・記録する"""
         self.rw = self.img.size[0]
         self.rh = self.img.size[1]
         self.w = self.rw + (self.border * 2)
         self.h = self.rh + (self.border * 2)
 
     def trim(self):
-        u"""最小サイズでトリミング"""
-
-        tw = self.img.size[0]
-        th = self.img.size[1]
-        t = self.img.getbbox()
-        if t[0] != 0 or t[1] != 0 or t[2] != tw or t[3] != th:
+        """最小サイズでトリミング"""
+        tbox = self.img.getbbox()
+        if tbox[0] != 0 or tbox[1] != 0 or \
+                tbox[2] != self.rw or tbox[3] != self.rh:
             self.trim_enable = True
-            self.frame_x = - t[0]
-            self.frame_y = - t[1]
-            self.img = self.img.crop(t)
+            self.frame_x = - tbox[0]
+            self.frame_y = - tbox[1]
+            self.img = self.img.crop(tbox)
             self.set_wh()
 
     def dump(self):
+        """画像情報を出力"""
         s = "%4d %s %s " % (self.idx, self.name, self.fn)
-        s +=" x,y,w,h=%d,%d,%d(%d),%d(%d)" % \
+        s += " x,y,w,h=%d,%d,%d(%d),%d(%d)" % \
             (self.x, self.y, self.w, self.rw, self.h, self.rh)
         if self.trim_enable:
             s += " trim fX,fY,fW,fH=%d,%d,%d,%d" % \
                 (self.frame_x, self.frame_y, self.frame_w, self.frame_h)
         print s
 
-def dump_all_image_info(lis):
-    u"""全画像の情報をダンプ"""
 
-    map((lambda im: im.dump()), lis)
+def dump_all_image_info(lis):
+    """全画像の情報をダンプ"""
+    for im in lis:
+        im.dump()
+
 
 def open_image(opts):
-    u"""画像ファイル群を開く."""
+    """画像ファイル群を開く."""
 
     # ファイル一覧を取得
     filelist = glob.glob(opts.infile)
@@ -192,7 +200,7 @@ def open_image(opts):
         (dw, dh, r_lis) = set_pos_nextfit(lis, opts.debug)
 
     # 画像を生成
-    bkimg = Image.new('RGBA', (dw, dh), (0,0,0,0))
+    bkimg = Image.new('RGBA', (dw, dh), (0, 0, 0, 0))
     for im in r_lis:
         bkimg.paste(im.img, (im.x + im.border, im.y + im.border))
 
@@ -220,24 +228,25 @@ def open_image(opts):
     if opts.show:
         bkimg.show()
 
-def output_xml(outfn, pngfn,  lis):
-    u"""xmlを出力"""
+
+def output_xml(outfn, pngfn, lis):
+    """xmlを出力"""
 
     png_basename = os.path.basename(pngfn)
     f = open(outfn, "w")
     f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
     f.write(u"<TextureAtlas imagePath=\"%s\">\n" % (png_basename))
 
-    for im in lis:
-        x = im.x + im.border
-        y = im.y + im.border
-        s = u"    <SubTexture name=\"%s\"" % (im.name)
+    for img in lis:
+        x = img.x + img.border
+        y = img.y + img.border
+        s = u"    <SubTexture name=\"%s\"" % (img.name)
         s += u" x=\"%d\" y=\"%d\"" % (x, y)
-        s += u" width=\"%d\" height=\"%d\"" % (im.rw, im.rh)
-        if im.trim_enable:
-            s += " frameX=\"%d\" frameY=\"%d\"" % (im.frame_x, im.frame_y)
+        s += u" width=\"%d\" height=\"%d\"" % (img.rw, img.rh)
+        if img.trim_enable:
+            s += " frameX=\"%d\" frameY=\"%d\"" % (img.frame_x, img.frame_y)
             s += " frameWidth=\"%d\" frameHeight=\"%d\"" % \
-                (im.frame_w, im.frame_h)
+                (img.frame_w, img.frame_h)
 
         s += u"/>\n"
         f.write(s)
@@ -245,8 +254,9 @@ def output_xml(outfn, pngfn,  lis):
     f.write(u"</TextureAtlas>\n")
     f.close()
 
+
 def set_pos_nextfit(lis, dbg):
-    u"""Next-Fit法で配置"""
+    """Next-Fit法で配置"""
 
     aw = 2
     ah = 2
@@ -302,14 +312,13 @@ def set_pos_nextfit(lis, dbg):
 
 
 def set_pos_blf(lis, dbg):
-    u"""BLF法で配置"""
+    """BLF法で配置"""
 
     Blp = namedtuple('Blp', 'x y w h')
     aw = 2
     ah = 2
 
-    idx = 0
-    bp = [Blp(0,0,0,0)]
+    bp = [Blp(0, 0, 0, 0)]
     num1 = range(len(lis))
     num2 = []
 
@@ -320,7 +329,7 @@ def set_pos_blf(lis, dbg):
 
         # 矩形を配置できそうなBL安定点を探す
         found_idx = -1
-        for i,s in enumerate(bp):
+        for i, s in enumerate(bp):
             if c.w < s.w or c.h < s.h:
                 continue
 
@@ -335,7 +344,8 @@ def set_pos_blf(lis, dbg):
 
                 for n in num2:
                     d = lis[n]
-                    if x1 < (d.x + d.w) and d.x < x2 and y1 < (d.y + d.h) and d.y < y2:
+                    if (x1 < (d.x + d.w) and d.x < x2 and
+                            y1 < (d.y + d.h) and d.y < y2):
                         # 衝突している矩形がある。コレジャナイ
                         break
                 else:
@@ -353,8 +363,7 @@ def set_pos_blf(lis, dbg):
                 aw *= 2
             if dbg:
                 print "dest image size = (%d,%d)" % (aw, ah)
-            idx = 0
-            bp = [Blp(0,0,0,0)]
+            bp = [Blp(0, 0, 0, 0)]
             num1 = range(len(lis))
             num2 = []
             continue
@@ -379,7 +388,7 @@ def set_pos_blf(lis, dbg):
         tblp.append(Blp(0, cy2, cx1, 0))
 
         # 現矩形と配置済み矩形との間で作れるBL安定点候補を追加登録
-        for j,pn in enumerate(num2):
+        for j in range(len(num2)):
             p = lis[num2[j]]
             px1 = p.x
             px2 = p.x + p.w
@@ -415,7 +424,8 @@ def set_pos_blf(lis, dbg):
 
             for n in num2:
                 d = lis[n]
-                if d.x <= b.x and b.x < (d.x + d.w) and d.y <= b.y and (b.y < d.y + d.h):
+                if (d.x <= b.x and b.x < (d.x + d.w) and
+                        d.y <= b.y and (b.y < d.y + d.h)):
                     # 配置済み矩形の中にBL安定点候補が入っている
                     break
             else:
@@ -424,11 +434,13 @@ def set_pos_blf(lis, dbg):
 
     return (aw, ah, lis)
 
+
 def main():
+    """メイン処理"""
+
     opts = chk_arg()
     open_image(opts)
 
+
 if __name__ == '__main__':
     main()
-
-
