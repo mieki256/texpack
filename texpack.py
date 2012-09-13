@@ -15,6 +15,10 @@ usage:
 履歴
 ----
 
+2012/09/13 ver 0.0.5
+
+* xml出力時、ファイル名でソートできてなかったバグを修正。
+
 2012/09/07 ver 0.0.4
 
 * PEP8に従ってソースを整形。
@@ -206,7 +210,7 @@ def open_image(opts):
 
     # 画像リストを元の並びにソート
     if not opts.sortoff:
-        sortlis_h = sorted(lis, key=attrgetter('idx'), reverse=False)
+        sortlis_h = sorted(lis, key=attrgetter('fn'), reverse=False)
         lis = sortlis_h
 
     # 確認のために各画像の配置状態をダンプ
@@ -220,7 +224,7 @@ def open_image(opts):
         print "output %s" % (opts.outpng)
 
     # xmlを出力
-    output_xml(opts.outxml, opts.outpng, r_lis)
+    output_xml(opts.outxml, opts.outpng, lis)
     if opts.verbose:
         print "output %s" % (opts.outxml)
 
