@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TextureAtlas imagePath="out0.png">
+    <SubTexture name="bg00_240x320" x="2" y="2" width="240" height="320"/>
+    <SubTexture name="i00_32x32" x="258" y="434" width="32" height="32"/>
+    <SubTexture name="i01_32x32" x="294" y="434" width="32" height="32"/>
+    <SubTexture name="i02_32x32" x="330" y="434" width="32" height="32"/>
+    <SubTexture name="i03_32x32" x="366" y="434" width="32" height="32"/>
+    <SubTexture name="i04_48x96" x="446" y="234" width="48" height="96"/>
+    <SubTexture name="i05_48x96" x="102" y="426" width="48" height="96"/>
+    <SubTexture name="i06_48x96" x="154" y="434" width="48" height="96"/>
+    <SubTexture name="i07_48x96" x="206" y="434" width="48" height="96"/>
+    <SubTexture name="i08_128x96" x="246" y="134" width="128" height="96"/>
+    <SubTexture name="i09_128x96" x="378" y="134" width="128" height="96"/>
+    <SubTexture name="i10_128x128" x="246" y="2" width="128" height="128"/>
+    <SubTexture name="i11_128x128" x="378" y="2" width="128" height="128"/>
+    <SubTexture name="m00_96x96" x="246" y="234" width="96" height="96"/>
+    <SubTexture name="m01_96x96" x="346" y="234" width="96" height="96"/>
+    <SubTexture name="m02_96x96" x="2" y="326" width="96" height="96"/>
+    <SubTexture name="m03_96x96" x="102" y="326" width="96" height="96"/>
+    <SubTexture name="m04_96x96" x="202" y="334" width="96" height="96"/>
+    <SubTexture name="m05_96x96" x="302" y="334" width="96" height="96"/>
+    <SubTexture name="m06_96x96" x="402" y="334" width="96" height="96"/>
+    <SubTexture name="m07_96x96" x="2" y="426" width="96" height="96"/>
+</TextureAtlas>
