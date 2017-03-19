@@ -60,11 +60,11 @@ Texture Atlas用の画像を生成するPythonスクリプト。
 
 * ギッシリ詰め込んだ感じの結果サンプル (--trim --mode blf)
 
-[![ギッシリ詰め込んだ感じの結果サンプル](https://dl.dropbox.com/u/84075965/screenshot/texpack/out2.png)](https://dl.dropbox.com/u/84075965/screenshot/texpack/out2.png)
+[![ギッシリ詰め込んだ感じの結果サンプル](./sample_output/out2.png)](./sample_output/out2.png)
 
-[出力xmlのサンプル](https://dl.dropbox.com/u/84075965/screenshot/texpack/out2.xml)
+[出力xmlのサンプル](./sample_output/out2.xml)
 
 * 賢くない感じの詰め込み結果サンプル (--sortoff --mode nextfit)
 
-[![賢くない感じの詰め込み結果サンプル](https://dl.dropbox.com/u/84075965/screenshot/texpack/out1.png)](https://dl.dropbox.com/u/84075965/screenshot/texpack/out1.png)
+[![賢くない感じの詰め込み結果サンプル](./sample_output/out1.png)](./sample_output/out1.png)
 
